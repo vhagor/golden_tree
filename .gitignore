@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+
+# downloaded data and generated charts (recreate with fetch_data.py / plot.py)
+data/
+reports/
