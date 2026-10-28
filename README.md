@@ -87,6 +87,7 @@ quant/
   plot.py         生成对比图 reports/comparison_<起始年>.svg
 data/             行情数据（CSV，由 fetch_data.py 下载，不纳入 git）
 reports/          生成的图表（由 plot.py 生成，不纳入 git）
+research/         本地研究数据、筛选和分析脚本、旧历史备份（不纳入 git）
 ```
 
 ## 环境准备
@@ -139,4 +140,4 @@ cd ~/workbench/golden_tree
 ## 历史版本
 
 - 上一版是只交易 QQQ 的三票投票策略（牛市按波动率用 QLD 加杠杆到最高 1.5 倍，熊市可用 PSQ 小比例做空），保存在提交 `cde3469`。
-- 更早的 MA7/MA25 原始策略、各类因子与过滤器研究，备份在本机 `~/gt_research/golden_tree_history_20261023.bundle`，需要时用 `git clone ~/gt_research/golden_tree_history_20261023.bundle old_golden_tree` 找回，最后一个包含完整研究的提交是 `222ca70`。
+- 更早的 MA7/MA25 原始策略、各类因子与过滤器研究，备份在本机 `research/golden_tree_history_20261023.bundle`，需要时用 `git clone research/golden_tree_history_20261023.bundle old_golden_tree` 找回，最后一个包含完整研究的提交是 `222ca70`。
