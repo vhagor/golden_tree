@@ -1,4 +1,4 @@
-"""Draw the strategy against QQQ as an SVG: one-time $10,000, monthly $1,000, and drawdown.
+"""Draw the portfolio against QQQ as an SVG: one-time $10,000, monthly $1,000, and drawdown.
 
 Usage: python quant/plot.py [start] [end]      (defaults 2000-01-03 .. latest)
 Output: reports/comparison_<start year>.svg
@@ -9,10 +9,11 @@ import math
 from core import ROOT, Market, period
 from dca import accumulate
 from lump_sum import run
+from strategy import SYMBOLS
 
 W, LEFT, RIGHT = 1200, 90, 1060
 COLORS = {"strategy": "#2a78d6", "qqq": "#eb6834", "paid": "#898781"}
-NAMES = {"strategy": "Three-vote strategy", "qqq": "QQQ", "paid": "Money paid in"}
+NAMES = {"strategy": "Portfolio", "qqq": "QQQ", "paid": "Money paid in"}
 
 
 def panel(svg, top, height, title, series, log, fmt, end_labels=True):
@@ -46,7 +47,7 @@ def drawdown(pts):
 
 if __name__ == "__main__":
     start, end = period("2000-01-03")
-    curves = run(Market(), start, end)
+    curves = run(Market(SYMBOLS), start, end)
     lump = {k: [(d, 10_000 * e) for d, e in c] for k, c in curves.items()}
     monthly = {k: accumulate(c) for k, c in curves.items()}
     dca = {k: [(d, v) for d, _, v in p] for k, p in monthly.items()}
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="1060" font-family="system-ui, sans-serif">',
            f'<rect width="{W}" height="1060" fill="#fcfcfb"/>',
-           f'<text x="{LEFT}" y="40" font-size="22" font-weight="600">Three-vote strategy vs QQQ, {start} to {lump["qqq"][-1][0]}</text>']
+           f'<text x="{LEFT}" y="40" font-size="22" font-weight="600">Portfolio (QQQ / BRK-B / AI stocks, bull-bear switch) vs QQQ, {start} to {lump["qqq"][-1][0]}</text>']
     for k, name in enumerate(NAMES):
         svg.append(f'<line x1="{LEFT + k * 220}" x2="{LEFT + k * 220 + 24}" y1="66" y2="66" stroke="{COLORS[name]}" stroke-width="3"/>'
                    f'<text x="{LEFT + k * 220 + 32}" y="70" font-size="13">{NAMES[name]}</text>')

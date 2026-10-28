@@ -1,18 +1,16 @@
 """Shared data, indicators, backtest engine and metrics.
 
-Conventions: a target weight decided at the close of day i is traded at the open of day
-i+1; trades cost 5 bp of the amount traded; idle cash earns the 13-week T-bill rate;
-exposure above 100% is QLD-like (T-bill + 2%/yr); short exposure is PSQ-like (0.95%/yr).
+Conventions: a target weight decided at the close of day i is traded at the open of day i+1;
+trades cost 5 bp of the amount traded; money not held in any symbol earns the 13-week T-bill
+rate (SGOV). Weights are long-only and add up to at most 100%.
 """
 
 import csv
-import math
-import statistics
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COST, LEVERAGE_SPREAD, SHORT_FEE = 0.0005, 0.02, 0.0095
+COST = 0.0005
 
 
 def read(symbol):
@@ -21,9 +19,9 @@ def read(symbol):
 
 
 class Market:
-    """QQQ trading calendar with other series aligned and forward-filled."""
+    """QQQ trading calendar with other series aligned and forward-filled (None before a listing)."""
 
-    def __init__(self, symbols=("MTUM", "USMV")):
+    def __init__(self, symbols=()):
         qqq = read("QQQ")
         self.dates = sorted(qqq)
         self.n = len(self.dates)
@@ -52,23 +50,15 @@ def sma(values, n):
     return out
 
 
-def realized_vol(values, n):
-    logs = [0.0] + [math.log(values[i] / values[i - 1]) for i in range(1, len(values))]
-    return [None if i < n else statistics.pstdev(logs[i - n + 1:i + 1]) * math.sqrt(252) for i in range(len(values))]
-
-
 def backtest(m, weights, start, end):
     """weights: {symbol: [target weight decided at each close]}. Returns [(date, equity)]."""
     days = [i for i, d in enumerate(m.dates) if start <= d <= end]
     held = {s: 0.0 for s in weights}
     equity, curve = 1.0, []
     for i in days:
-        rate = m.cash[i - 1]
-        longs = sum(max(w, 0) for w in held.values())
-        shorts = sum(max(-w, 0) for w in held.values())
-        financing = (1 - longs) * rate if longs <= 1 else (1 - longs) * (rate + LEVERAGE_SPREAD / 252)
+        cash = (1 - sum(held.values())) * m.cash[i - 1]
         overnight = sum(w * (m.adj_open[s][i] / m.adj[s][i - 1] - 1) for s, w in held.items() if w)
-        equity *= 1 + overnight + financing - shorts * SHORT_FEE / 252
+        equity *= 1 + overnight + cash
         target = {s: weights[s][i - 1] for s in weights}
         equity *= 1 - COST * sum(abs(target[s] - held[s]) for s in weights)
         equity *= 1 + sum(w * (m.adj[s][i] / m.adj_open[s][i] - 1) for s, w in target.items() if w)

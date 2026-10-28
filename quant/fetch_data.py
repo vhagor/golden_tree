@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+from strategy import SYMBOLS as PORTFOLIO
+
 DATA = Path(__file__).resolve().parents[1] / "data"
-SYMBOLS = ["QQQ", "MTUM", "USMV", "^IRX"]
+SYMBOLS = ["QQQ", "^IRX", *PORTFOLIO]
 FEAR_GREED_URL = "https://raw.githubusercontent.com/whit3rabbit/fear-greed-data/main/fear-greed.csv"
 
 

@@ -1,11 +1,12 @@
 """Monthly investing: the same amount on the first session of every month, into QQQ or
-into the strategy (new money follows the strategy's current allocation).
+into the portfolio (new money follows the portfolio's current allocation).
 
 Usage: python quant/dca.py [start] [end]      (defaults 2020-01-02 .. latest)
 """
 
 from core import Market, period
 from lump_sum import run
+from strategy import SYMBOLS
 
 
 def accumulate(curve, amount=1000):
@@ -42,7 +43,7 @@ def summary(path):
 
 if __name__ == "__main__":
     start, end = period()
-    for name, curve in run(Market(), start, end).items():
+    for name, curve in run(Market(SYMBOLS), start, end).items():
         r = summary(accumulate(curve))
         print(f"{name:8s} paid ${r['paid']:,.0f} -> ${r['value']:,.0f}  IRR {r['irr']:+.1%}  "
               f"worst value vs paid {r['worst_vs_paid']:+.1%}")
